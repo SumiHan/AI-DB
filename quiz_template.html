@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>퀴즈 템플릿 (5지선다)</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+    background: linear-gradient(135deg, #f0fdfa 0%, #99f6e4 100%);
+    margin: 0; padding: 30px 16px; color: #134e4a; line-height: 1.65; min-height: 100vh;
+  }
+  main { max-width: 820px; margin: 0 auto; }
+  .overlay { position: fixed; inset: 0; background: rgba(13,148,136,0.55); display: flex;
+    align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+  .overlay-card { background: #fff; border-radius: 16px; padding: 34px 30px; max-width: 420px;
+    width: 100%; box-shadow: 0 12px 40px rgba(0,0,0,0.2); text-align: center; }
+  .overlay-card h2 { margin: 0 0 6px; font-size: 21px; color: #0d9488; }
+  .overlay-card p { color: #6b7280; font-size: 13.5px; margin: 0 0 20px; }
+  .overlay-card input { width: 100%; padding: 13px 14px; font-size: 15px; border: 2px solid #d1d5db;
+    border-radius: 10px; outline: none; margin-bottom: 14px; font-family: inherit; }
+  .overlay-card input:focus { border-color: #0d9488; }
+  .btn { background: #0d9488; color: #fff; border: none; padding: 13px 20px; width: 100%;
+    border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; transition: background .2s; }
+  .btn:hover { background: #0b7c72; }
+  .header { background: #fff; border-radius: 16px; padding: 26px 30px; margin-bottom: 18px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.06); text-align: center; }
+  .course-tag { display: inline-block; background: #0d9488; color: #fff; padding: 4px 14px;
+    border-radius: 18px; font-size: 11.5px; font-weight: 600; letter-spacing: 1px; margin-bottom: 10px; }
+  h1 { margin: 4px 0 6px; font-size: 24px; color: #134e4a; }
+  .subtitle { color: #6b7280; font-size: 13.5px; }
+  .hello { margin-top: 10px; font-size: 13px; color: #0d9488; font-weight: 600; }
+  .progress-wrap { background: #fff; border-radius: 12px; padding: 14px 18px; margin-bottom: 18px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.05); position: sticky; top: 10px; z-index: 10; }
+  .progress-top { display: flex; justify-content: space-between; font-size: 12.5px; color: #6b7280; margin-bottom: 7px; }
+  .progress-bar { height: 8px; background: #e5e7eb; border-radius: 6px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg,#0d9488,#5eead4); transition: width .35s; }
+  .q-card { background: #fff; border-radius: 14px; padding: 22px 24px; margin-bottom: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.05); }
+  .q-text { font-size: 15.5px; font-weight: 700; margin-bottom: 14px; }
+  .q-num { color: #0d9488; font-weight: 800; margin-right: 6px; }
+  .opt { border: 2px solid #e5e7eb; border-radius: 10px; padding: 12px 14px; margin-bottom: 9px;
+    cursor: pointer; font-size: 14px; transition: all .15s; display: flex; gap: 9px; }
+  .opt:hover { border-color: #99f6e4; background: #f0fdfa; }
+  .opt .letter { font-weight: 800; color: #0d9488; flex-shrink: 0; }
+  .opt.correct { border-color: #16a34a; background: #f0fdf4; }
+  .opt.wrong { border-color: #dc2626; background: #fef2f2; }
+  .opt.disabled { cursor: default; pointer-events: none; }
+  .explain { margin-top: 8px; font-size: 13px; color: #334155; background: #f0fdfa;
+    border-left: 3px solid #0d9488; border-radius: 6px; padding: 10px 12px; display: none; }
+  .explain.show { display: block; }
+  .result { background: #fff; border-radius: 16px; padding: 32px 28px; text-align: center;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.08); display: none; margin-top: 8px; }
+  .result.show { display: block; }
+  .grade-badge { font-size: 52px; font-weight: 800; margin: 6px 0; }
+  .score-line { font-size: 16px; color: #555; margin-bottom: 16px; }
+  .save-status { font-size: 13px; margin-top: 12px; padding: 9px; border-radius: 8px; }
+  .save-status.saving { background: #fff8e1; color: #b8860b; }
+  .save-status.saved { background: #f0fdf4; color: #16a34a; }
+  .save-status.save-err { background: #fef2f2; color: #dc2626; }
+  .footer { text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div class="overlay" id="nameOverlay">
+  <div class="overlay-card">
+    <h2 id="ovTitle">퀴즈</h2>
+    <p>이름을 입력하면 퀴즈가 시작됩니다.<br>결과는 자동으로 기록됩니다.</p>
+    <input type="text" id="nameInput" placeholder="이름을 입력하세요" maxlength="20" />
+    <button class="btn" id="startBtn">퀴즈 시작 →</button>
+  </div>
+</div>
+
+<main>
+  <div class="header">
+    <span class="course-tag" id="tag">QUIZ</span>
+    <h1 id="hTitle">퀴즈</h1>
+    <div class="subtitle">보기를 클릭하면 바로 정답과 해설을 볼 수 있어요.</div>
+    <div class="hello" id="hello"></div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-top">
+      <span id="progressLabel">0 / 0 문항</span>
+      <span id="scoreLabel">정답 0개</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <div id="quizArea"></div>
+
+  <div class="result" id="result">
+    <div style="font-size:14px;color:#0d9488;font-weight:700;">퀴즈 완료!</div>
+    <div class="grade-badge" id="gradeBadge"></div>
+    <div class="score-line" id="resultScore"></div>
+    <div id="resultMsg" style="font-size:14px;color:#555;"></div>
+    <div class="save-status" id="saveStatus"></div>
+  </div>
+
+  <div class="footer">퀴즈 템플릿 · 자유롭게 수정해 사용하세요</div>
+</main>
+
+<script>
+/* ============================================================
+   ✏️  여기부터 아래 [편집 끝] 표시까지만 고치면 됩니다.
+   ============================================================ */
+
+// ① 결과 저장 주소 — 가이드 3단계에서 복사한 Apps Script URL을 붙여넣으세요.
+//    아직 없으면 그대로 두어도 퀴즈는 작동합니다 (결과 저장만 안 됨).
+const SCRIPT_URL = "여기에_APPS_SCRIPT_주소_붙여넣기";
+
+// ② 이 퀴즈의 고유 이름 — 스프레드시트에서 어떤 퀴즈인지 구분하는 이름입니다.
+const QUIZ_ID = "내퀴즈_1";
+
+// ③ 화면에 보일 제목
+const QUIZ_TITLE = "○○○ 퀴즈";
+
+// ④ 문항 — { ... } 한 덩어리가 한 문항입니다.
+//    복사해서 붙여넣으면 문항이 늘어나고, 지우면 줄어듭니다. (5개 보기 권장)
+const questions = [
+
+  {
+    q: "여기에 질문을 쓰세요. (예) 다음 중 '추론통계'에 해당하는 작업은?",
+    opts: [
+      "첫 번째 보기",
+      "두 번째 보기",
+      "세 번째 보기",
+      "네 번째 보기",
+      "다섯 번째 보기"
+    ],
+    answer: 0,          // 정답 번호: 첫 보기=0, 둘째=1, 셋째=2, 넷째=3, 다섯째=4
+    explain: "왜 이게 정답이고 다른 보기는 왜 틀렸는지 한두 문장으로 해설을 쓰세요."
+  },
+
+  {
+    q: "두 번째 질문 예시.",
+    opts: ["보기 A", "보기 B", "보기 C", "보기 D", "보기 E"],
+    answer: 2,
+    explain: "해설을 쓰세요."
+  }
+
+  // ↑ 위 { } 블록을 복사해서 문항을 더 추가하세요. (마지막 블록 뒤에는 쉼표 없이)
+
+];
+
+/* ============================================================
+   [편집 끝]  아래는 손대지 않아도 됩니다.
+   ============================================================ */
+
+let studentName = "";
+let correctCount = 0;
+let answered = 0;
+const selectedAnswers = new Array(questions.length).fill(null);
+const letters = ["A", "B", "C", "D", "E", "F"];
+
+document.getElementById("ovTitle").textContent = QUIZ_TITLE;
+document.getElementById("hTitle").textContent = QUIZ_TITLE;
+document.getElementById("tag").textContent = QUIZ_ID;
+document.getElementById("progressLabel").textContent = "0 / " + questions.length + " 문항";
+
+document.getElementById("startBtn").addEventListener("click", startQuiz);
+document.getElementById("nameInput").addEventListener("keydown", e => { if (e.key === "Enter") startQuiz(); });
+
+function startQuiz() {
+  const v = document.getElementById("nameInput").value.trim();
+  if (!v) { document.getElementById("nameInput").focus(); return; }
+  studentName = v;
+  document.getElementById("nameOverlay").classList.add("hidden");
+  document.getElementById("hello").textContent = studentName + "님, 시작해 볼까요?";
+  renderQuiz();
+}
+
+function renderQuiz() {
+  let html = "";
+  questions.forEach((q, i) => {
+    let optsHtml = "";
+    q.opts.forEach((o, j) => {
+      optsHtml += `<div class="opt" data-q="${i}" data-o="${j}">
+        <span class="letter">${letters[j]}</span><span>${o}</span></div>`;
+    });
+    html += `<div class="q-card" id="card-${i}">
+      <div class="q-text"><span class="q-num">Q${i+1}.</span>${q.q}</div>
+      <div class="opts">${optsHtml}</div>
+      <div class="explain" id="explain-${i}"><b>해설</b> · ${q.explain}</div>
+    </div>`;
+  });
+  document.getElementById("quizArea").innerHTML = html;
+  document.querySelectorAll(".opt").forEach(el => el.addEventListener("click", onSelect));
+  updateProgress();
+}
+
+function onSelect(e) {
+  const el = e.currentTarget;
+  const qi = +el.dataset.q, oi = +el.dataset.o;
+  if (selectedAnswers[qi] !== null) return;
+  selectedAnswers[qi] = oi;
+  answered++;
+  const correct = questions[qi].answer;
+  document.getElementById("card-" + qi).querySelectorAll(".opt").forEach((o, j) => {
+    o.classList.add("disabled");
+    if (j === correct) o.classList.add("correct");
+    if (j === oi && oi !== correct) o.classList.add("wrong");
+  });
+  if (oi === correct) correctCount++;
+  document.getElementById("explain-" + qi).classList.add("show");
+  updateProgress();
+  if (answered === questions.length) showResult();
+}
+
+function updateProgress() {
+  const pct = Math.round((answered / questions.length) * 100);
+  document.getElementById("progressFill").style.width = pct + "%";
+  document.getElementById("progressLabel").textContent = answered + " / " + questions.length + " 문항";
+  document.getElementById("scoreLabel").textContent = "정답 " + correctCount + "개";
+}
+
+function showResult() {
+  const pct = Math.round((correctCount / questions.length) * 100);
+  let grade, color, msg;
+  if (pct >= 90)      { grade = "S"; color = "#0d9488"; msg = "완벽해요!"; }
+  else if (pct >= 80) { grade = "A"; color = "#16a34a"; msg = "훌륭합니다!"; }
+  else if (pct >= 70) { grade = "B"; color = "#2563eb"; msg = "좋아요, 해설을 한 번 더 읽어보세요."; }
+  else if (pct >= 60) { grade = "C"; color = "#ea580c"; msg = "기본은 잡았어요."; }
+  else                { grade = "복습"; color = "#dc2626"; msg = "해설을 보고 다시 도전해요!"; }
+
+  const gradeText = (grade === "복습") ? "복습" : grade + "등급";
+  document.getElementById("gradeBadge").textContent = grade;
+  document.getElementById("gradeBadge").style.color = color;
+  document.getElementById("resultScore").textContent =
+    questions.length + "문항 중 " + correctCount + "개 정답 (" + pct + "%)";
+  document.getElementById("resultMsg").textContent = msg;
+  document.getElementById("result").classList.add("show");
+  document.getElementById("result").scrollIntoView({ behavior: "smooth" });
+  submitResult(pct, gradeText);
+}
+
+function submitResult(pct, grade) {
+  const s = document.getElementById("saveStatus");
+  if (!SCRIPT_URL || SCRIPT_URL.indexOf("http") !== 0) {
+    s.className = "save-status save-err";
+    s.textContent = "ℹ️ 저장 주소가 설정되지 않아 결과는 화면에만 표시됩니다.";
+    return;
+  }
+  s.className = "save-status saving"; s.textContent = "⏳ 결과 저장 중...";
+  const sel = selectedAnswers.join(",");
+  const cor = questions.map(q => q.answer).join(",");
+  const qtexts = questions.map(q => q.q.replace(/,/g, " ").substring(0, 30)).join("|");
+  const optexts = questions.map((q, i) => {
+    const idx = selectedAnswers[i];
+    return (idx !== null && idx >= 0) ? q.opts[idx].replace(/,/g, " ").substring(0, 20) : "-";
+  }).join("|");
+  const params = "?name="    + encodeURIComponent(studentName)
+               + "&week="    + encodeURIComponent(QUIZ_ID)
+               + "&correct=" + correctCount
+               + "&total="   + questions.length
+               + "&pct="     + pct
+               + "&grade="   + encodeURIComponent(grade)
+               + "&sel="     + encodeURIComponent(sel)
+               + "&cor="     + encodeURIComponent(cor)
+               + "&qtexts="  + encodeURIComponent(qtexts)
+               + "&optexts=" + encodeURIComponent(optexts);
+  fetch(SCRIPT_URL + params, { method: "GET", mode: "no-cors" })
+    .then(() => { s.className = "save-status saved"; s.textContent = "✅ " + studentName + "님의 결과가 저장되었습니다."; })
+    .catch(() => { s.className = "save-status save-err"; s.textContent = "❌ 저장 실패. 결과를 스크린샷으로 남겨주세요."; });
+}
+</script>
+</body>
+</html>
